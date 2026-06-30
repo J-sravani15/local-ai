@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local AI - Document Intelligence Pipeline</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Local AI</h1>
+        <div class="subtitle">CPU-First Document Intelligence Pipeline — Fully Offline</div>
+        <div class="badge-container">
+            <span class="badge badge-offline">Offline-First</span>
+            <span class="badge badge-cpu">CPU-Optimized</span>
+            <span class="badge badge-local">100% Local</span>
+            <span class="badge" style="background:#e0e0e0;color:#333;">No External APIs</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="card span-full">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-docs">0</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-processed">0</div>
+                    <div class="stat-label">Processed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-words">0</div>
+                    <div class="stat-label">Words</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-chars">0</div>
+                    <div class="stat-label">Characters</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="fill" id="progress-fill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Ingest Text</h2>
+            <div class="form-group">
+                <label for="doc-title">Title (optional)</label>
+                <input type="text" id="doc-title" placeholder="Document title...">
+            </div>
+            <div class="form-group">
+                <label for="text-input">Enter text to analyze</label>
+                <textarea id="text-input" placeholder="Paste or type your text here..."></textarea>
+            </div>
+            <button class="btn btn-primary" id="btn-ingest-text" onclick="ingestText()">Analyze Text</button>
+        </div>
+
+        <div class="card">
+            <h2>Upload File</h2>
+            <div class="form-group">
+                <label>Supported: TXT, MD, PDF, PNG, JPG, BMP, TIFF</label>
+                <div class="file-upload">
+                    <input type="file" id="file-input" accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.bmp,.tiff">
+                    <span id="file-label">Choose a file or drag it here</span>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="btn-ingest-file" onclick="ingestFile()">Upload & Analyze</button>
+        </div>
+
+        <div class="card">
+            <h2>Documents <span class="count" id="doc-count"></span></h2>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search documents..." onkeyup="if(event.key==='Enter') searchDocuments()">
+                <button class="btn btn-secondary" onclick="searchDocuments()">Search</button>
+            </div>
+            <div class="doc-list" id="doc-list">
+                <div class="empty-state">
+                    <div class="icon">📄</div>
+                    <p>No documents yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Document Detail</h2>
+            <div class="doc-detail" id="doc-detail">
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <p>Select a document from the list to view details.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Structured Output <span class="badge" style="background:#ff9800;color:white;font-size:0.7rem;">Ollama</span></h2>
+            <div id="structured-panel">
+                <div class="empty-state">
+                    <div class="icon">📊</div>
+                    <p>Select a processed document to view structured JSON output.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
