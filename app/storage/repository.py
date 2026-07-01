@@ -16,9 +16,15 @@ def _safe_row(row) -> dict:
     return result
 
 
-def insert_document(title: str, source: str, content_type: str,
-                     raw_text: str, char_count: int, word_count: int,
-                     page_count: int = 0) -> int:
+def insert_document(
+    title: str,
+    source: str,
+    content_type: str,
+    raw_text: str,
+    char_count: int,
+    word_count: int,
+    page_count: int = 0,
+) -> int:
     conn = get_connection()
     try:
         cur = conn.execute(
@@ -46,7 +52,8 @@ def get_document(doc_id: int) -> Optional[dict]:
     try:
         row = conn.execute(
             "SELECT id, title, source, content_type, raw_text, char_count, word_count, page_count, processed, created_at "
-            "FROM documents WHERE id = ?", (doc_id,)
+            "FROM documents WHERE id = ?",
+            (doc_id,),
         ).fetchone()
         return dict(row) if row else None
     finally:
@@ -87,8 +94,14 @@ def insert_entities(entities: list[dict]) -> list[int]:
             cur = conn.execute(
                 """INSERT INTO entities (document_id, entity_type, entity_value, confidence, context_start, context_end)
                    VALUES (?, ?, ?, ?, ?, ?)""",
-                (ent["document_id"], ent["entity_type"], ent["entity_value"],
-                 ent["confidence"], ent.get("context_start", 0), ent.get("context_end", 0)),
+                (
+                    ent["document_id"],
+                    ent["entity_type"],
+                    ent["entity_value"],
+                    ent["confidence"],
+                    ent.get("context_start", 0),
+                    ent.get("context_end", 0),
+                ),
             )
             ids.append(cur.lastrowid)
         conn.commit()
@@ -134,8 +147,12 @@ def insert_classification(classification: dict) -> int:
         cur = conn.execute(
             """INSERT INTO classifications (document_id, category, confidence, all_scores)
                VALUES (?, ?, ?, ?)""",
-            (classification["document_id"], classification["category"],
-             classification["confidence"], all_scores_json),
+            (
+                classification["document_id"],
+                classification["category"],
+                classification["confidence"],
+                all_scores_json,
+            ),
         )
         conn.commit()
         return cur.lastrowid
@@ -148,7 +165,8 @@ def get_classification_by_document(doc_id: int) -> Optional[dict]:
     try:
         row = conn.execute(
             "SELECT id, document_id, category, confidence, all_scores "
-            "FROM classifications WHERE document_id = ?", (doc_id,)
+            "FROM classifications WHERE document_id = ?",
+            (doc_id,),
         ).fetchone()
         if row:
             result = dict(row)
@@ -163,7 +181,9 @@ def get_classification_by_document(doc_id: int) -> Optional[dict]:
         conn.close()
 
 
-def insert_summary(document_id: int, summary_text: str, suggested_tags: list[str]) -> int:
+def insert_summary(
+    document_id: int, summary_text: str, suggested_tags: list[str]
+) -> int:
     conn = get_connection()
     try:
         tags_json = json.dumps(suggested_tags)
@@ -182,7 +202,8 @@ def get_summary_by_document(doc_id: int) -> Optional[dict]:
     try:
         row = conn.execute(
             "SELECT id, document_id, summary_text, suggested_tags "
-            "FROM summaries WHERE document_id = ?", (doc_id,)
+            "FROM summaries WHERE document_id = ?",
+            (doc_id,),
         ).fetchone()
         if row:
             result = dict(row)
@@ -211,7 +232,16 @@ def insert_structured_output(document_id: int, data: dict) -> int:
             """INSERT OR REPLACE INTO structured_outputs
                (document_id, title, ai_summary, key_topics, document_type, sentiment, extracted_entities, raw_json)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (document_id, title, ai_summary, key_topics, document_type, sentiment, extracted_entities, raw_json),
+            (
+                document_id,
+                title,
+                ai_summary,
+                key_topics,
+                document_type,
+                sentiment,
+                extracted_entities,
+                raw_json,
+            ),
         )
         conn.commit()
         return cur.lastrowid

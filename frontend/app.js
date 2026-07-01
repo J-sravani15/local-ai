@@ -79,7 +79,7 @@ function escapeHtml(text) {
 
 function renderStructuredPanel(structured) {
     const panel = document.getElementById("structured-panel");
-    if (!structured || !structured.raw_json || Object.keys(structured.raw_json).length === 0) {
+    if (!structured || !structured.raw_json) {
         panel.innerHTML = `
             <div class="empty-state">
                 <div class="icon">📊</div>
@@ -89,7 +89,9 @@ function renderStructuredPanel(structured) {
         `;
         return;
     }
-    const json = structured.raw_json;
+    const json = typeof structured.raw_json === "string"
+        ? JSON.parse(structured.raw_json)
+        : structured.raw_json;
     const topics = (json.key_topics || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("");
     const entities = (json.extracted_entities || []).map(e =>
         `<span class="entity-tag">${escapeHtml(e.type)}: ${escapeHtml(e.name)}</span>`
@@ -121,7 +123,7 @@ function renderStructuredPanel(structured) {
 function downloadStructuredJSON() {
     if (!currentDocId) return;
     apiFetch(`/api/documents/${currentDocId}`).then(data => {
-        const json = data.structured_output?.raw_json;
+        const json = data.structured_output;
         if (!json) {
             showToast("No structured data available", "error");
             return;
@@ -247,12 +249,36 @@ async function ingestText() {
         renderDocumentList();
         renderStats();
         loadDocument(data.document_id);
+        pollStructuredOutput(data.document_id);
     } catch (err) {
         showToast("Ingestion failed: " + err.message, "error");
     } finally {
         btn.disabled = false;
         btn.innerHTML = 'Analyze Text';
     }
+}
+
+function pollStructuredOutput(docId) {
+    const startTime = Date.now();
+    const maxDuration = 60000;
+    const interval = setInterval(async () => {
+        if (Date.now() - startTime > maxDuration) {
+            clearInterval(interval);
+            return;
+        }
+        try {
+            const data = await apiFetch(`/api/documents/${docId}`);
+            const so = data.structured_output;
+            if (so && so.raw_json) {
+                clearInterval(interval);
+                if (currentDocId === docId) {
+                    renderStructuredPanel(so);
+                }
+            }
+        } catch (err) {
+            clearInterval(interval);
+        }
+    }, 2000);
 }
 
 async function ingestFile() {
@@ -282,6 +308,7 @@ async function ingestFile() {
         renderDocumentList();
         renderStats();
         loadDocument(data.document_id);
+        pollStructuredOutput(data.document_id);
     } catch (err) {
         showToast("File ingestion failed: " + err.message, "error");
     } finally {
