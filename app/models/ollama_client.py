@@ -7,7 +7,7 @@ import urllib.error
 logger = logging.getLogger(__name__)
 
 OLLAMA_API = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "phi3:mini"
+OLLAMA_MODEL = "llama3:latest"
 TIMEOUT = 300
 
 
