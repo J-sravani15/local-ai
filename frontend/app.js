@@ -1,6 +1,7 @@
 const API_BASE = "";
 
 let currentDocId = null;
+let pollInterval = null;
 
 async function apiFetch(path, options = {}) {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -82,10 +83,12 @@ function renderStructuredPanel(structured) {
     if (!structured || !structured.raw_json) {
         panel.innerHTML = `
             <div class="empty-state">
-                <div class="icon">📊</div>
-                <p>Ollama not available or document not processed yet. <br>
-                <span style="font-size:0.8rem;color:#999;">Make sure Ollama is running with phi3:mini.</span></p>
-            </div>
+    <h4>Generating Structured Output...</h4>
+    <p>Your document has been processed successfully.</p>
+    <p>The local AI model is now generating the structured JSON.</p>
+    <p>This usually takes 20–60 seconds on CPU depending on document size.</p>
+    <p>The results will appear automatically once ready.</p>
+</div>
         `;
         return;
     }
@@ -116,6 +119,10 @@ function renderStructuredPanel(structured) {
         </div>
         <div class="actions" style="margin-top:1rem;">
             <button class="btn btn-secondary" onclick="downloadStructuredJSON()">Download JSON</button>
+        </div>
+        <div class="detail-section">
+            <h3>Generated JSON</h3>
+            <pre class="json-block"><code>${escapeHtml(JSON.stringify(json, null, 2))}</code></pre>
         </div>
     `;
 }
@@ -188,7 +195,11 @@ async function loadDocument(docId) {
             </div>
         `;
 
+        const hasStructured = data.structured_output && data.structured_output.raw_json;
         renderStructuredPanel(data.structured_output);
+        if (!hasStructured) {
+            pollStructuredOutput(docId);
+        }
     } catch (err) {
         showToast("Failed to load document: " + err.message, "error");
     }
@@ -199,6 +210,10 @@ async function deleteCurrentDoc() {
     if (!confirm("Delete this document?")) return;
     try {
         await apiFetch(`/api/documents/${currentDocId}`, { method: "DELETE" });
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        }
         showToast("Document deleted");
         currentDocId = null;
         document.getElementById("doc-detail").innerHTML = `
@@ -259,24 +274,40 @@ async function ingestText() {
 }
 
 function pollStructuredOutput(docId) {
+    if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+    }
     const startTime = Date.now();
-    const maxDuration = 60000;
-    const interval = setInterval(async () => {
+    const maxDuration = 300000;
+    pollInterval = setInterval(async () => {
         if (Date.now() - startTime > maxDuration) {
-            clearInterval(interval);
+            clearInterval(pollInterval);
+            pollInterval = null;
+            const panel = document.getElementById("structured-panel");
+            if (panel && currentDocId === docId) {
+                panel.innerHTML = `
+                    <div class="empty-state">
+                        <p>Structured output generation is taking longer than expected.</p>
+                        <p style="font-size:0.85rem;color:#666;">The model is still processing. Refresh the document to check again.</p>
+                    </div>
+                `;
+            }
             return;
         }
         try {
             const data = await apiFetch(`/api/documents/${docId}`);
             const so = data.structured_output;
             if (so && so.raw_json) {
-                clearInterval(interval);
+                clearInterval(pollInterval);
+                pollInterval = null;
                 if (currentDocId === docId) {
                     renderStructuredPanel(so);
                 }
             }
         } catch (err) {
-            clearInterval(interval);
+            clearInterval(pollInterval);
+            pollInterval = null;
         }
     }, 2000);
 }
@@ -345,4 +376,11 @@ function searchDocuments() {
 document.addEventListener("DOMContentLoaded", () => {
     renderStats();
     renderDocumentList();
+    const fileInput = document.getElementById("file-input");
+    const fileLabel = document.getElementById("file-label");
+    fileInput.addEventListener("change", () => {
+        fileLabel.textContent = fileInput.files.length
+            ? "\uD83D\uDCC4 " + fileInput.files[0].name
+            : "Choose a file or drag it here";
+    });
 });

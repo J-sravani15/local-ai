@@ -4,22 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Local AI - Document Intelligence Pipeline</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/styles.css?v=2">
 </head>
 <body>
     <header>
-        <h1>Local AI</h1>
-        <div class="subtitle">CPU-First Document Intelligence Pipeline — Fully Offline</div>
-        <div class="badge-container">
-            <span class="badge badge-offline">Offline-First</span>
-            <span class="badge badge-cpu">CPU-Optimized</span>
-            <span class="badge badge-local">100% Local</span>
-            <span class="badge" style="background:#e0e0e0;color:#333;">No External APIs</span>
+        <div class="header-inner">
+            <div class="header-top">
+                <h1>Local AI</h1>
+                <div class="badge-container">
+                    <span class="badge badge-offline">Offline-First</span>
+                    <span class="badge badge-cpu">CPU-Optimized</span>
+                    <span class="badge badge-local">100% Local</span>
+                    <span class="badge badge-api">No External APIs</span>
+                </div>
+            </div>
+            <div class="subtitle">Offline-First CPU Document Intelligence Pipeline</div>
         </div>
     </header>
 
     <main>
-        <div class="card span-full">
+        <div class="card span-full stats-card">
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-value" id="stat-docs">0</div>
@@ -43,7 +47,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card col-6">
             <h2>Ingest Text</h2>
             <div class="form-group">
                 <label for="doc-title">Title (optional)</label>
@@ -56,7 +60,7 @@
             <button class="btn btn-primary" id="btn-ingest-text" onclick="ingestText()">Analyze Text</button>
         </div>
 
-        <div class="card">
+        <div class="card col-3">
             <h2>Upload File</h2>
             <div class="form-group">
                 <label>Supported: TXT, MD, PDF, PNG, JPG, BMP, TIFF</label>
@@ -65,10 +69,10 @@
                     <span id="file-label">Choose a file or drag it here</span>
                 </div>
             </div>
-            <button class="btn btn-primary" id="btn-ingest-file" onclick="ingestFile()">Upload & Analyze</button>
+            <button class="btn btn-primary" id="btn-ingest-file" onclick="ingestFile()">Upload &amp; Analyze</button>
         </div>
 
-        <div class="card">
+        <div class="card col-6">
             <h2>Documents <span class="count" id="doc-count"></span></h2>
             <div class="search-bar">
                 <input type="text" id="search-input" placeholder="Search documents..." onkeyup="if(event.key==='Enter') searchDocuments()">
@@ -82,7 +86,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card col-4">
             <h2>Document Detail</h2>
             <div class="doc-detail" id="doc-detail">
                 <div class="empty-state">
@@ -92,8 +96,8 @@
             </div>
         </div>
 
-        <div class="card">
-            <h2>Structured Output <span class="badge" style="background:#ff9800;color:white;font-size:0.7rem;">Ollama</span></h2>
+        <div class="card span-full">
+            <h2>Structured Output <span class="badge badge-ollama">Local AI</span></h2>
             <div id="structured-panel">
                 <div class="empty-state">
                     <div class="icon">📊</div>
@@ -103,6 +107,6 @@
         </div>
     </main>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=2"></script>
 </body>
 </html>

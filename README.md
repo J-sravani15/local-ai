@@ -6,10 +6,9 @@ The Local AI Document Intelligence Pipeline is an offline AI-powered document an
 
 The application supports document ingestion, text extraction, named entity recognition, document classification, summarization, and structured JSON generation using locally running AI models.
 
----
-
 ## Features
 
+<<<<<<< HEAD
 - Upload and analyze PDF, TXT, DOC, DOCX, PNG, JPG, BMP and TIFF files
 -  Analyze manually entered text
 -  Local AI inference using Ollama
@@ -274,11 +273,213 @@ https://github.com/J-sravani15
 
 GitLab:
 https://code.swecha.org/sravani15/localai
+=======
+- Offline-first AI processing
+- CPU-optimized inference
+- PDF and text document ingestion
+- Named Entity Recognition (NER)
+- Automatic document classification
+- AI-generated summaries
+- Structured JSON generation using Ollama (phi3:mini)
+- SQLite local storage
+- Searchable document history
+- Download structured JSON
+- Real-time dashboard statistics
+
+---
+
+## Technology Stack
+
+### Backend
+
+- FastAPI
+- Python
+- SQLite
+
+### AI Models
+
+- Ollama
+- phi3:mini
+- Hugging Face Transformers
+- sentence-transformers
+
+### Frontend
+
+- HTML
+- CSS
+- JavaScript
+
+---
+
+## Project Architecture
+
+Document Upload
+
+↓
+
+Text Extraction
+
+↓
+
+Named Entity Recognition
+
+↓
+
+Document Classification
+
+↓
+
+Summary Generation
+
+↓
+
+Structured JSON Generation (phi3:mini)
+
+↓
+
+SQLite Storage
+
+↓
+
+Frontend Visualization
+
+---
+
+## Installation
+
+Clone the repository
+
+```bash
+git clone <repository-url>
+cd localai
+```
+
+Create virtual environment
+
+```bash
+python -m venv .venv
+```
+
+Activate environment
+
+Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Install Ollama
+
+Download:
+
+https://ollama.com
+
+Pull the required model
+
+```bash
+ollama pull phi3:mini
+```
+
+Start Ollama
+
+```bash
+ollama serve
+```
+
+Run the application
+
+```bash
+python run.py
+```
+
+Open
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+## Usage
+
+1. Upload a document.
+2. Wait for processing.
+3. View:
+   - Summary
+   - Classification
+   - Entities
+   - Structured Output
+4. Download the generated JSON.
+
+---
+
+## Folder Structure
+
+```
+app/
+frontend/
+uploads/
+tests/
+data/
+run.py
+requirements.txt
+```
+
+---
+
+## Supported Formats
+
+- PDF
+- TXT
+- DOC
+- PNG
+- JPG
+- BMP
+- TIFF
+
+---
+
+## Offline Capability
+
+All AI inference runs locally using:
+
+- Ollama
+- phi3:mini
+- Hugging Face local models
+
+No OpenAI or external AI APIs are used during inference.
+
+---
+
+## Future Improvements
+
+- Audio transcription
+- Video support
+- Image captioning
+- Vector database integration
+- Faster quantized models
+
+---
+
+## Authors
+
+Team LocalAI
+>>>>>>> 4397f3c (Enhance Local AI dashboard and structured output UI)
 
 ---
 
 ## License
 
+<<<<<<< HEAD
 This project was developed as part of an internship/hackathon assignment for educational purposes.
 
 ---
+=======
+MIT License
+>>>>>>> 4397f3c (Enhance Local AI dashboard and structured output UI)

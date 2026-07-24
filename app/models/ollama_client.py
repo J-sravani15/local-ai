@@ -45,6 +45,52 @@ def _call_ollama(prompt: str) -> str | None:
         return None
 
 
+def _extract_json_str(raw: str) -> str | None:
+    cleaned = raw.strip()
+    if "```" in cleaned:
+        parts = cleaned.split("```")
+        for i in range(1, len(parts), 2):
+            candidate = parts[i].strip()
+            if candidate.lower().startswith("json"):
+                candidate = candidate[4:].strip()
+            if candidate.startswith("{"):
+                return candidate
+    try:
+        start = cleaned.index("{")
+        end = cleaned.rindex("}") + 1
+        return cleaned[start:end]
+    except ValueError:
+        pass
+    return None
+
+
+def _call_ollama_json(prompt: str, max_retries: int = 2) -> dict | None:
+    last_raw = None
+    last_error = None
+    for attempt in range(1 + max_retries):
+        raw = _call_ollama(prompt)
+        if not raw:
+            last_error = "Ollama returned empty response"
+            continue
+        last_raw = raw
+        extracted = _extract_json_str(raw)
+        if not extracted:
+            last_error = "Could not extract JSON string from response"
+            continue
+        try:
+            parsed = json.loads(extracted)
+            if isinstance(parsed, dict):
+                return parsed
+            last_error = f"Parsed JSON is not a dict, got {type(parsed).__name__}"
+        except json.JSONDecodeError as e:
+            last_error = str(e)
+    logger.error("All Ollama retries exhausted for structured JSON request")
+    logger.error(f"Raw Ollama response: {last_raw}")
+    if last_error:
+        logger.error(f"Parsing error: {last_error}")
+    return None
+
+
 SUMMARY_PROMPT = """Summarize the following text in 1-3 concise sentences.
 Return ONLY the summary, no extra commentary.
 
@@ -85,25 +131,7 @@ def _run_summary(text: str, document_id: int):
 def _run_structured_json(text: str, document_id: int):
     from app.storage import repository as repo
     prompt = STRUCTURED_PROMPT.format(text=text[:2000])
-    raw = _call_ollama(prompt)
-    if not raw:
-        return
-    cleaned = raw.strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.split("\n", 1)[-1]
-        cleaned = cleaned.rsplit("```", 1)[0]
-    parsed = None
-    try:
-        parsed = json.loads(cleaned.strip())
-    except json.JSONDecodeError:
-        logger.warning("Ollama returned invalid JSON, attempting extraction...")
-        try:
-            start = cleaned.index("{")
-            end = cleaned.rindex("}") + 1
-            parsed = json.loads(cleaned[start:end])
-        except (ValueError, json.JSONDecodeError) as e:
-            logger.error(f"Could not parse Ollama response: {e}")
-            return
+    parsed = _call_ollama_json(prompt)
     if parsed is None:
         return
     try:
@@ -134,21 +162,4 @@ def ollama_structured_json(text: str) -> dict | None:
     if not text or len(text.strip()) < 20:
         return None
     prompt = STRUCTURED_PROMPT.format(text=text[:2000])
-    raw = _call_ollama(prompt)
-    if not raw:
-        return None
-    cleaned = raw.strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.split("\n", 1)[-1]
-        cleaned = cleaned.rsplit("```", 1)[0]
-    try:
-        return json.loads(cleaned.strip())
-    except json.JSONDecodeError:
-        logger.warning("Ollama returned invalid JSON, attempting extraction...")
-        try:
-            start = cleaned.index("{")
-            end = cleaned.rindex("}") + 1
-            return json.loads(cleaned[start:end])
-        except (ValueError, json.JSONDecodeError) as e:
-            logger.error(f"Could not parse Ollama response: {e}")
-            return None
+    return _call_ollama_json(prompt)
