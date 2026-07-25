@@ -7,17 +7,19 @@ import urllib.error
 logger = logging.getLogger(__name__)
 
 OLLAMA_API = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3:latest"
+OLLAMA_MODEL = "llama3.2:latest"
 TIMEOUT = 300
 
 
 def _call_ollama(prompt: str) -> str | None:
-    payload = json.dumps({
-        "model": OLLAMA_MODEL,
-        "prompt": prompt,
-        "stream": False,
-        "options": {"num_predict": 512, "temperature": 0.1},
-    }).encode()
+    payload = json.dumps(
+        {
+            "model": OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"num_predict": 512, "temperature": 0.1},
+        }
+    ).encode()
     req = urllib.request.Request(
         OLLAMA_API,
         data=payload,
@@ -117,6 +119,7 @@ JSON:"""
 
 def _run_summary(text: str, document_id: int):
     from app.storage import repository as repo
+
     prompt = SUMMARY_PROMPT.format(text=text[:2000])
     result = _call_ollama(prompt)
     if result and len(result) > 10:
@@ -130,6 +133,7 @@ def _run_summary(text: str, document_id: int):
 
 def _run_structured_json(text: str, document_id: int):
     from app.storage import repository as repo
+
     prompt = STRUCTURED_PROMPT.format(text=text[:2000])
     parsed = _call_ollama_json(prompt)
     if parsed is None:
@@ -146,7 +150,9 @@ def schedule_ollama_tasks(text: str, document_id: int):
         return
     t1 = threading.Thread(target=_run_summary, args=(text, document_id), daemon=True)
     t1.start()
-    t2 = threading.Thread(target=_run_structured_json, args=(text, document_id), daemon=True)
+    t2 = threading.Thread(
+        target=_run_structured_json, args=(text, document_id), daemon=True
+    )
     t2.start()
     logger.info(f"Scheduled Ollama background tasks for document {document_id}")
 
